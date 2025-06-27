@@ -1,0 +1,55 @@
+IoT_system/
+│
+├── data_api/               # Django app for sensor data and MQTT commands
+│   ├── __init__.py
+│   ├── views.py            # MongoDB data view and MQTT command view
+│   └── urls.py             # URL endpoints for data and MQTT
+│
+├── IoT_system/
+│   ├── static/
+│   │   ├── modbus.js       # Frontend JS for Modbus
+│   │   ├── mqtt.js         # Frontend JS for MQTT
+│   │   └── styles.js       # CSS styles for the frontend
+│   │
+│   ├── templates/
+│   │   ├── base.html       # Frontend main html page
+│   │   ├── modbus.html     # Frontend html page for Modbus
+│   │   └── mqtt.html       # Frontend html page for MQTT
+│   │
+│   ├── __init__.py
+│   ├── asgi.py
+│   ├── settings.py         # Configuration for PostgreSQL, MongoDB, DRF
+│   ├── urls.py             # Root URL configuration
+│   ├── views.py            # Views for frontend html pages
+│   └── wsgi.py
+│
+├── modbus/                 # Custom folder for TCP Architecture
+│   ├── __init__.py
+│   ├── admin.py            # Registration of modbus device model in Django admin
+│   ├── modbus_server.py    # Modbus TCP Server
+│   ├── models.py           # Modbus device model stored in PostgreSQL
+│   ├── serializers.py      # Modbus device serializer
+│   ├── services.py         # Modbus client services
+│   ├── urls.py             # URL router for Modbus endpoints
+│   └── views.py            # Views for Modbus server, clients and devices control
+│
+├── mqtt_clients/            # Custom folder for MQTT clients
+│   ├── __init__.py
+│   ├── mqtt_publisher.py    # MQTT publisher client (e.g. fetch data from API and send)
+│   ├── mqtt_subscriber.py   # MQTT subscriber client (store data in MongoDB)
+│   ├── urls.py              # URL router for MQTT endpoints
+│   └── views.py             # Views for MQTT publisher and subscriber control
+│
+├── mqtt_devices/           # Django app for device metadata
+│   ├── __init__.py
+│   ├── admin.py
+│   ├── models.py           # MQTT device model stored in PostgreSQL
+│   ├── serializers.py      # DRF serializer for Device model
+│   ├── urls.py             # URL router for MQTT device endpoints
+│   ├── views.py            # ViewSet for CRUD operations on Device
+│   └── admin.py
+│
+├── __init__.py
+├── manage.py               # Django project entry point
+├── requirements.txt        # Python dependencies (optional)
+└── .env                    # MongoDB URI, secret key, etc. (optional)

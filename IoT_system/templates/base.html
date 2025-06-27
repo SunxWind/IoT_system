@@ -1,0 +1,24 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Control Panel{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'styles.css' %}">
+    <script src="{% static 'modbus.js' %}" defer></script>
+    <script src="{% static 'mqtt.js' %}" defer></script>
+    <meta name="csrf-token" content="{{ csrf_token }}">
+</head>
+<body>
+
+    <div class="menu">
+        <a href="{% url 'modbus' %}">Modbus</a>
+        <a href="{% url 'mqtt' %}">MQTT</a>
+    </div>
+
+    {% block content %}
+    <!-- Page-specific content goes here -->
+    {% endblock %}
+
+</body>
+</html>

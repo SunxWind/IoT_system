@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Modbus Dashboard{% endblock %}
+
+{% block content %}
+    <h1>Modbus Control Panel</h1>
+
+    <div class="control-panel">
+        <h3>Modbus Server</h3>
+        <p>Status: <span id="server_status" class="status-label">Loading...</span></p>
+        <button onclick="startServer()">Start Server</button>
+        <button onclick="stopServer()">Stop Server</button>
+    </div>
+
+    <div class="control-panel">
+        <h3>Devices</h3>
+        <table id="devices-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Active</th>
+                    <th>Running</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Filled dynamically by JS -->
+            </tbody>
+        </table>
+    </div>
+
+    <h3>Device Logs</h3>
+    <select id="device-select"></select>
+    <button id="refresh-btn">Refresh</button>
+    <div id="logs-container"></div>
+    <table id="logs-table">
+        <thead>
+            <tr>
+                <th>Timestamp</th>
+                <th>Value</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+{% endblock %}

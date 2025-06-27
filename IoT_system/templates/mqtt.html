@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}MQTT Dashboard{% endblock %}
+
+{% block content %}
+    <h1>MQTT Control Panel</h1>
+
+    <!-- CSRF token for setting cookie -->
+    <form style="display: none;">
+        {% csrf_token %}
+    </form>
+
+    <div class="control-panel">
+        <h3>MQTT Publisher</h3>
+        <p>Status: <span id="mqtt_publisher_status" class="status-label">Loading...</span></p>
+        <button onclick="startPublisher()">Start Publisher</button>
+        <button onclick="stopPublisher()">Stop Publisher</button>
+    </div>
+
+    <div class="control-panel">
+        <h3>MQTT Subscriber</h3>
+        <p>Status: <span id="mqtt_subscriber_status" class="status-label">Loading...</span></p>
+        <button onclick="startSubscriber()">Start Subscriber</button>
+        <button onclick="stopSubscriber()">Stop Subscriber</button>
+    </div>
+
+    <div class="control-panel">
+        <h2>Device Control</h2>
+        <div>
+            <label for="serial_number">Device Serial Number:</label>
+            <input type="text" id="serial_number" required>
+
+            <label for="command">Command:</label>
+            <select id="command" required>
+                <option value="">-- Select Command --</option>
+                <option value="START">Turn ON</option>
+                <option value="STOP">Turn OFF</option>
+            </select>
+
+            <label for="qos">QoS Level:</label>
+            <select id="qos">
+                <option value="0">0 - At most once</option>
+                <option value="1" selected>1 - At least once</option>
+                <option value="2">2 - Exactly once</option>
+            </select>
+
+            <button onclick="sendCommand()">Send Command</button>
+            <p id="status"></p>
+        </div>
+    </div>
+
+    <h2>Sensor Data</h2>
+    <button onclick="fetchData()">Refresh Data</button>
+    <table id="data-table">
+        <thead>
+            <tr>
+                <th>Timestamp</th>
+                <th>Name</th>
+                <th>Symbol</th>
+                <th>Price (USD)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- JS will populate this -->
+        </tbody>
+    </table>
+{% endblock %}

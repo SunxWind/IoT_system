@@ -1,0 +1,36 @@
+                            +----------------------------+
+                            |        Web Browser         |
+                            | (JS: mqtt.js / modbus.js)  |
+                            +-------------+--------------+
+                                          |
+                                          v
+                            +----------------------------+
+                            |        Django Views        |
+                            | (IoT_system/views.py)      |
+                            | - Renders HTML templates   |
+                            +-------------+--------------+
+                                          |
+                                          v
+         +-------------------+      +----------------------+      +----------------------+
+         |   mqtt.html       |<---->|  data_api/urls.py    |<---->| data_api/views.py    |
+         |   modbus.html     |      |  modbus/urls.py      |      | modbus/views.py      |
+         +-------------------+      |  mqtt_clients/urls.py|      | mqtt_clients/views.py|
+                                    |  mqtt_devices/urls.py|      | mqtt_devices/views.py|
+                                    +----------+-----------+      +----------+-----------+
+                                               |                             |
+                                               v                             v
++--------------------------+     +---------------------------+   +--------------------------+
+| MQTT Publisher           |     | MQTT Subscriber           |   | Modbus TCP Server/Client |
+| mqtt_clients/mqtt_*.py   |     | mqtt_clients/mqtt_*.py    |   | modbus/modbus_server.py  |
++--------+-----------------+     +---------+-----------------+   | modbus/services.py       |
+         |                                 |                     +----------+---------------+
+         |                                 |                                |
+         |             Publishes           |      Subscribes & stores       |
+         +-------------------------------->+------------------------------->+
+                                   (via MQTT Broker)                        |
+                                                                            |
+                                  +-------------------+         +------------------------+
+                                  |  PostgreSQL       |         |     MongoDB (Sensor)   |
+                                  |  (modbus, mqtt    |         | - Sensor Data Storage  |
+                                  |  device metadata) |         +------------------------+
+                                  +-------------------+

@@ -1,0 +1,9 @@
+/IoT_system/.env_mine
+/IoT_system/manage.py
+/IoT_system/Visual_Diagram_of_the_project_old
+/BACKEND_úloha pro uchazeče.pdf
+/ChatGPT Image May 20, 2025, 12_10_53 PM.png
+/IoT_system/requirements-all.txt
+/.venv/
+*.pyc
+__pycache__/
