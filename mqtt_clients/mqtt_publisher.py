@@ -1,6 +1,7 @@
 import os
 from dotenv import load_dotenv
 import time
+import ssl
 import threading
 import json
 import requests
@@ -12,7 +13,9 @@ load_dotenv()
 # Configuration
 BROKER_ADDRESS = os.getenv('MQTT_BROKER')
 BROKER_PORT = int(os.getenv('MQTT_PORT'))
-PUBLISH_TOPIC = "sensors/crypto"
+MQTT_USERNAME = os.getenv('MQTT_USERNAME')
+MQTT_PASSWORD = os.getenv('MQTT_PASSWORD')
+PUBLISH_TOPIC = os.getenv('MQTT_PUBLISH_TOPIC')
 INTERVAL = 10  # seconds
 
 MONGO_URI = os.getenv('MONGO_URI')
@@ -54,7 +57,14 @@ def fetch_crypto_data(limit=2):
         return []
 
 def _run_publisher():
-    client = mqtt.Client()
+    client = mqtt.Client(client_id="device_123_publisher")
+    client.tls_set(
+        ca_certs="/etc/mosquitto/certs/ca.crt",
+        certfile="/etc/mosquitto/certs/clients/client.crt",
+        keyfile="/etc/mosquitto/certs/clients/client.key",
+        cert_reqs=ssl.CERT_REQUIRED,
+        tls_version=ssl.PROTOCOL_TLS_CLIENT)
+    client.username_pw_set(MQTT_USERNAME, MQTT_PASSWORD)
     client.connect(BROKER_ADDRESS, BROKER_PORT, 60)
     client.loop_start()
 

@@ -15,24 +15,6 @@ function getCookie(name) {
     return cookieValue;
 }
 
-//async function fetchPublisherStatus() {
-//    try {
-//        const response = await fetch('/mqtt/api/publisher/status/');
-//        const data = await response.json();
-//        const label = document.getElementById('mqtt-status');
-//
-//        if (data.status === 'running') {
-//            label.innerText = 'Running';
-//            label.className = 'status-label running';
-//        } else {
-//            label.innerText = 'Stopped';
-//            label.className = 'status-label stopped';
-//        }
-//    } catch {
-//        document.getElementById('mqtt-status').innerText = 'Error';
-//    }
-//}
-
 async function fetchPublisherStatus() {
     const res = await fetch('/mqtt/api/publisher/status/');
     const { running } = await res.json();
@@ -56,9 +38,6 @@ async function stopPublisher() {
         });
     await refreshAll();
 }
-
-// Auto-load status on page load
-//document.addEventListener('DOMContentLoaded', fetchPublisherStatus);
 
 async function fetchSubscriberStatus() {
     const res = await fetch('/mqtt/api/subscriber/status/');

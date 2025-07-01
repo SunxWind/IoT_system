@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <title>{% block title %}Control Panel{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'styles.css' %}">
+    <link rel="icon" href="{% static 'images/favicon.ico' %}" type="image/x-icon">
     <script src="{% static 'modbus.js' %}" defer></script>
     <script src="{% static 'mqtt.js' %}" defer></script>
     <meta name="csrf-token" content="{{ csrf_token }}">
