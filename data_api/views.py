@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 import paho.mqtt.publish as publish
 from mqtt_devices.models import MQTTDevice
 
+
 load_dotenv()
 
 MONGO_URI = os.getenv('MONGO_URI')
@@ -22,17 +23,20 @@ PASSWORD = os.getenv('MQTT_PASSWORD')
 
 logger = logging.getLogger(__name__)
 
+
 class MQTTDataMongoView(APIView):
     """APIView for retrieving mqtt data stored in MongoDB."""
     permission_classes = [IsAuthenticated]
     def get(self, request):
         try:
-
+            # Connecting to data collection in MongoDB
             mongo_client = MongoClient(MONGO_URI)
             db = mongo_client[DB_NAME]
             collection = db[MQTT_COLLECTION_NAME]
             data_cursor = collection.find().sort("timestamp", -1).limit(20)
             result = []
+
+            # Saving retrieved data to the response in JSON format
             for item in data_cursor:
                 print(item)
                 result.append({
@@ -47,9 +51,11 @@ class MQTTDataMongoView(APIView):
 
 
 class SendMQTTCommand(APIView):
+    """APIView for sending a control command to a mqtt device."""
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+        # Getting the parameters of the device and the command from the request
         serial_number = request.data.get("serial_number")
         command = request.data.get("command")
         qos = request.data.get("qos", 0)  # Default QoS=0
@@ -63,6 +69,7 @@ class SendMQTTCommand(APIView):
                 status=400
             )
 
+        # Looking for the active device according to the device serial number, taken from the request
         try:
             device = MQTTDevice.objects.get(serial_number=serial_number)
             logger.info(f"Device-{device} was found")
@@ -97,6 +104,8 @@ class SendMQTTCommand(APIView):
                 client_id=f"publisher_{serial_number}"
             )
             logger.info(f"Sent command to {topic}: {command}")
+
+            # Response to the frontend
             return Response({
                 "status": "success",
                 "device": device.name,

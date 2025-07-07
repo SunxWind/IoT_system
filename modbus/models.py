@@ -1,5 +1,6 @@
 from django.db import models
 
+
 class ModbusDevice(models.Model):
     name = models.CharField(max_length=100)
     host = models.CharField(max_length=100)

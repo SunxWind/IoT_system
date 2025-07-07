@@ -7,6 +7,8 @@ IoT_system/
 │
 ├── IoT_system/
 │   ├── static/
+│   │   ├── images/         # Static images
+    │   │   └── favicon.ico
 │   │   ├── modbus.js       # Frontend JS for Modbus
 │   │   ├── mqtt.js         # Frontend JS for MQTT
 │   │   └── styles.js       # CSS styles for the frontend
@@ -24,10 +26,11 @@ IoT_system/
 │   └── wsgi.py
 │
 ├── modbus/                 # Custom folder for TCP Architecture
+│   ├── migrations          # Migrations for ModbusDevice model
 │   ├── __init__.py
 │   ├── admin.py            # Registration of modbus device model in Django admin
 │   ├── modbus_server.py    # Modbus TCP Server
-│   ├── models.py           # Modbus device model stored in PostgreSQL
+│   ├── models.py           # ModbusDevice model stored in PostgreSQL
 │   ├── serializers.py      # Modbus device serializer
 │   ├── services.py         # Modbus client services
 │   ├── urls.py             # URL router for Modbus endpoints
@@ -41,13 +44,13 @@ IoT_system/
 │   └── views.py             # Views for MQTT publisher and subscriber control
 │
 ├── mqtt_devices/           # Django app for device metadata
+│   ├── migrations          # Migrations for MQTTDevice model
 │   ├── __init__.py
 │   ├── admin.py
-│   ├── models.py           # MQTT device model stored in PostgreSQL
+│   ├── models.py           # MQTTdevice model stored in PostgreSQL
 │   ├── serializers.py      # DRF serializer for Device model
 │   ├── urls.py             # URL router for MQTT device endpoints
-│   ├── views.py            # ViewSet for CRUD operations on Device
-│   └── admin.py
+│   └── views.py            # ViewSet for CRUD operations on Device
 │
 ├── __init__.py
 ├── manage.py               # Django project entry point

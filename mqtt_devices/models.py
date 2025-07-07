@@ -1,13 +1,12 @@
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 
+
 class MQTTDevice(models.Model):
     """Represents metadata about a device stored in PostgreSQL."""
     name = models.CharField(max_length=100)
     serial_number = models.CharField(max_length=100, unique=True)
-    slave_id = models.IntegerField(default=1,
-                                   validators=[MinValueValidator(1), MaxValueValidator(247)]
-                                   )
+    slave_id = models.IntegerField(default=1, validators=[MinValueValidator(1), MaxValueValidator(247)])
     location = models.CharField(max_length=100)
     is_active = models.BooleanField(default=True)
     mqtt_command_topic = models.CharField(max_length=255, default="mqtt_devices/{serial_number}/command")

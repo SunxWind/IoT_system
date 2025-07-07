@@ -125,7 +125,7 @@ async function sendCommand() {
             },
             credentials: "include",
             body: JSON.stringify({
-                serial_number: serialNumber,  // Matches your API field name
+                serial_number: serialNumber,  // Matches API's field name
                 command: command,
                 qos: parseInt(qos)
             })

@@ -18,13 +18,22 @@ from django.contrib import admin
 from django.urls import path, include
 from .views import index, mqtt, modbus
 
+
+# Main Django urls
 urlpatterns = [
     path('admin/', admin.site.urls),
+    # Url for index page
     path('', index, name='index'),
+    # Url for MQTT dashboard page
     path('mqtt/', mqtt, name='mqtt'),
+    # Including urls for MQTT endpoints
     path('mqtt/api/', include('mqtt_clients.urls')),
+    # Url for Modbus dashboard page
     path('modbus/', modbus, name='modbus'),
+    # Including urls for Modbus endpoints
     path('modbus/', include('modbus.urls')),
+    # Including MQTT endpoints urls for MQTTDataMongoView and SendMQTTCommand view
     path('mqtt/api/', include('data_api.urls')),
+    # Including endpoints urls for CRUD operations for MQTT devices
     path('mqtt/', include('mqtt_devices.urls')),
 ]

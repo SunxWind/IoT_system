@@ -1,6 +1,7 @@
 from django.contrib import admin
 from .models import MQTTDevice
 
+
 @admin.register(MQTTDevice)
 class MQTTDeviceAdmin(admin.ModelAdmin):
     """

@@ -7,16 +7,24 @@ import paho.mqtt.client as mqtt
 from paho.mqtt.client import CallbackAPIVersion
 from dotenv import load_dotenv
 
+
+# Load environment variables from .env file
 load_dotenv()
 
+# Configure logging
 logger = logging.getLogger(__name__)
 logging.basicConfig(
-    level=logging.DEBUG,  # or DEBUG for more detail
+    level=logging.DEBUG,  # Use DEBUG for detailed output, WARNING for general info
     format="%(asctime)s [%(levelname)s] %(message)s",
 )
 
+
 class MQTTSubscriber:
     def __init__(self):
+        """
+        Initialize the MQTTSubscriber instance.
+        Sets up Django, loads MQTTDevice model, and attempts to initialize the MQTT client.
+        """
         self.setup_django()
         from mqtt_devices.models import MQTTDevice
         self.Device = MQTTDevice
@@ -25,7 +33,7 @@ class MQTTSubscriber:
         self.max_retries = 5
         self.retry_delay = 3
 
-        self.setup_django()
+        self.setup_django()  # Redundant but safe in case the first fails silently
 
         try:
             self.initialize_client()
@@ -33,14 +41,21 @@ class MQTTSubscriber:
             logger.error(f"Initial MQTT connection failed: {e}")
 
     def setup_django(self):
-        """Set up Django settings once"""
+        """
+        Set up Django settings so models can be imported and used.
+        Appends parent directory to sys.path and configures environment variables for Django.
+        """
         sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
         os.environ.setdefault("DJANGO_SETTINGS_MODULE", "IoT_system.settings")
         import django
         django.setup()
 
     def initialize_client(self):
-        """Initialize MQTT client with connection retries"""
+        """
+        Initialize the MQTT client, set up callbacks, and attempt connection with retries.
+        Raises:
+            Exception if connection fails after all retries or configuration is invalid.
+        """
         try:
             broker = os.getenv('MQTT_BROKER')
             port = int(os.getenv('MQTT_PORT'))
@@ -50,6 +65,7 @@ class MQTTSubscriber:
             if not broker:
                 raise ValueError("MQTT_BROKER environment variable not set")
 
+            # Create and configure MQTT client
             self.client = mqtt.Client(
                 client_id="device_123_subscriber",
                 callback_api_version=CallbackAPIVersion.VERSION2,
@@ -63,18 +79,18 @@ class MQTTSubscriber:
                 tls_version=ssl.PROTOCOL_TLS_CLIENT)
             self.client.username_pw_set(username, password)
 
+            # Socket event logging for advanced debugging
             self.client.on_socket_open = lambda client, userdata, sock: logger.info("Socket opened")
             self.client.on_socket_close = lambda client, userdata, sock: logger.warning("Socket closed")
-            self.client.on_socket_register_write = lambda client, userdata, sock: logger.debug(
-                "Socket write registered")
-            self.client.on_socket_unregister_write = lambda client, userdata, sock: logger.debug(
-                "Socket write unregistered")
+            self.client.on_socket_register_write = lambda client, userdata, sock: logger.debug("Socket write registered")
+            self.client.on_socket_unregister_write = lambda client, userdata, sock: logger.debug("Socket write unregistered")
 
+            # Assign callbacks
             self.client.on_connect = self.on_connect
             self.client.on_message = self.on_message
             self.client.on_disconnect = self.on_disconnect
 
-
+            # Retry loop for connecting to MQTT broker
             for attempt in range(1, self.max_retries + 1):
                 try:
                     self.client.connect(broker, port, 60)
@@ -98,7 +114,11 @@ class MQTTSubscriber:
             raise
 
     def validate_connection(self):
-        """Verify we can reach the broker"""
+        """
+        Check basic network connectivity to the MQTT broker using TCP socket.
+        Returns:
+            bool: True if connection is successful, False otherwise.
+        """
         import socket
         broker = os.getenv('MQTT_BROKER')
         port = int(os.getenv('MQTT_PORT', 8883))
@@ -111,6 +131,10 @@ class MQTTSubscriber:
             return False
 
     def on_connect(self, client, userdata, flags, rc, properties=None):
+        """
+        Callback when the client connects to the broker.
+        Subscribes to device topics on successful connection.
+        """
         print(f"on_connect called with rc={rc}")
         if rc == 0:
             self.connected = True
@@ -123,27 +147,38 @@ class MQTTSubscriber:
             logger.error(f"Connection failed with code {rc}")
 
     def on_message(self, client, userdata, msg):
+        """
+        Callback for handling incoming MQTT messages.
+
+        Handles commands for devices based on the topic:
+        Expected format: mqtt_devices/<serial_number>/command
+
+        Valid commands:
+            - START: Sets device as active
+            - STOP: Sets device as inactive
+        """
         try:
             topic = msg.topic
             payload = msg.payload.decode()
             logger.info(f"Received message on topic {topic}: {payload}")
 
-            # Validate topic structure: mqtt_devices/<serial_number>/command
+            # Validate topic structure
             parts = topic.split('/')
-
             if len(parts) != 3 or parts[0] != "mqtt_devices" or parts[2] != "command":
                 logger.warning(f"Invalid topic format: {topic}")
                 return
 
             serial_number = parts[1]
 
+            # Fetch device by serial number
             try:
                 device = self.Device.objects.get(serial_number=serial_number)
             except self.Device.DoesNotExist:
                 logger.error(f"Device with serial_number {serial_number} not found.")
                 client.publish(f"devices/{serial_number}/error", "Device not found")
                 return
-            # Command handling
+
+            # Handle commands
             if payload.upper() == "START":
                 device.is_active = True
                 device.save(update_fields=["is_active"])
@@ -161,18 +196,27 @@ class MQTTSubscriber:
             try:
                 client.publish(f"devices/{serial_number}/error", str(e))
             except:
-                pass  # Avoid crashing the callback
+                pass  # Prevent crash if publishing error fails
 
     def on_disconnect(self, client, userdata, flags, rc, properties=None):
+        """
+        Callback triggered when client disconnects from the broker.
+        If disconnection was unexpected, attempts reconnection.
+        """
         self.connected = False
         logger.warning(f"Disconnected from MQTT broker (code: {rc})")
-        if rc != 0:  # Only attempt reconnect if unexpected disconnect
+        if rc != 0:  # Unexpected disconnect
             logger.info("Attempting to reconnect...")
             time.sleep(5)
             self.initialize_client()
 
     def subscribe_to_devices(self):
-        """Subscribe to active device topics"""
+        """
+        Subscribe to MQTT topics for all active devices stored in the database.
+
+        Returns:
+            bool: True if all subscriptions were successful, False otherwise.
+        """
         logger.info("Attempting to subscribe to device topics")
 
         if not self.connected:
@@ -183,6 +227,7 @@ class MQTTSubscriber:
             dev_objects = self.Device.objects.filter(is_active=True)
             logger.info(f"Found {dev_objects.count} active devices")
 
+            # Subscribe to each device's topic
             for device in dev_objects:
                 result, mid = self.client.subscribe(device.mqtt_command_topic)
                 if result == mqtt.MQTT_ERR_SUCCESS:
@@ -197,28 +242,33 @@ class MQTTSubscriber:
             return False
 
     def start(self):
-        """Start the MQTT client"""
+        """
+        Start the MQTT client if not already connected.
+        """
         if not self.connected:
             self.initialize_client()
 
     def stop(self):
-        """Stop the MQTT client"""
+        """
+        Stop and clean up the MQTT client.
+        Disconnects from the broker and stops the loop.
+        """
         if self.client:
             if self.connected:
                 self.client.disconnect()
             self.client.loop_stop()
-            self.client = None  # Important for cleanup
+            self.client = None  # Ensure cleanup
         logger.info("MQTT client stopped")
 
 
 if __name__ == "__main__":
+    # Entry point when running the module directly
     subscriber = MQTTSubscriber()
     subscriber.validate_connection()
 
     try:
         while True:
-            time.sleep(1)  # Keep main thread alive
+            time.sleep(1)  # Keep the main thread alive
     except KeyboardInterrupt:
         print("Exiting...")
         subscriber.stop()
-
